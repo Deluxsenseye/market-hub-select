@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,13 +21,14 @@ const Login = () => {
 
     // Simulación de login - aquí irá la integración con Supabase
     setTimeout(() => {
-      if (email === "admin@marketplace.com" && password === "admin123") {
+      if (username === "admin" && password === "admin123") {
         toast({
           title: "Acceso concedido",
           description: "Bienvenido al panel de administración",
         });
         navigate("/admin");
-      } else if (email.includes("@") && password.length > 3) {
+      } else if (username.length > 0 && password.length > 3) {
+        // Simulación de usuarios de empresa
         toast({
           title: "Acceso concedido",
           description: "Bienvenido a tu dashboard empresarial",
@@ -60,13 +61,13 @@ const Login = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">Email</Label>
+              <Label htmlFor="username" className="text-white">Usuario</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="empresa@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="nombre_usuario"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 className="bg-white/10 border-white/20 text-white placeholder:text-gray-300"
               />
@@ -90,8 +91,8 @@ const Login = () => {
           
           <div className="mt-6 p-4 bg-white/10 rounded-lg">
             <p className="text-sm text-gray-200 mb-2">Demo de acceso:</p>
-            <p className="text-xs text-gray-300">Admin: admin@marketplace.com / admin123</p>
-            <p className="text-xs text-gray-300">Empresa: cualquier@email.com / password</p>
+            <p className="text-xs text-gray-300">Admin: admin / admin123</p>
+            <p className="text-xs text-gray-300">Empresa: cualquier_usuario / password</p>
           </div>
         </CardContent>
       </Card>

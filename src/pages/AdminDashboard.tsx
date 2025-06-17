@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,15 +11,15 @@ import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
   const [companies, setCompanies] = useState([
-    { id: 1, name: "TechCorp SA", rut: "12.345.678-9", email: "admin@techcorp.com", status: "active" },
-    { id: 2, name: "InnovaShop", rut: "98.765.432-1", email: "ventas@innovashop.com", status: "active" },
-    { id: 3, name: "MegaSupplies", rut: "11.223.344-5", email: "contacto@megasupplies.com", status: "pending" },
+    { id: 1, name: "TechCorp SA", rut: "12.345.678-9", username: "techcorp_user", status: "active" },
+    { id: 2, name: "InnovaShop", rut: "98.765.432-1", username: "innovashop_user", status: "active" },
+    { id: 3, name: "MegaSupplies", rut: "11.223.344-5", username: "megasupplies_user", status: "pending" },
   ]);
 
   const [newCompany, setNewCompany] = useState({
     name: "",
     rut: "",
-    email: "",
+    username: "",
     password: ""
   });
 
@@ -29,16 +28,28 @@ const AdminDashboard = () => {
 
   const handleCreateCompany = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar que el usuario no exista
+    const userExists = companies.some(company => company.username === newCompany.username);
+    if (userExists) {
+      toast({
+        title: "Error",
+        description: "El nombre de usuario ya existe",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const company = {
       id: companies.length + 1,
       ...newCompany,
       status: "active"
     };
     setCompanies([...companies, company]);
-    setNewCompany({ name: "", rut: "", email: "", password: "" });
+    setNewCompany({ name: "", rut: "", username: "", password: "" });
     toast({
       title: "Empresa creada",
-      description: `${newCompany.name} ha sido registrada exitosamente`,
+      description: `${newCompany.name} con usuario "${newCompany.username}" ha sido registrada exitosamente`,
     });
   };
 
@@ -96,7 +107,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle>Crear Nueva Empresa</CardTitle>
                   <CardDescription>
-                    Registra una nueva empresa en la plataforma
+                    Registra una nueva empresa y crea sus credenciales de acceso
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -122,13 +133,12 @@ const AdminDashboard = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="username">Nombre de Usuario</Label>
                       <Input
-                        id="email"
-                        type="email"
-                        value={newCompany.email}
-                        onChange={(e) => setNewCompany({...newCompany, email: e.target.value})}
-                        placeholder="admin@empresa.com"
+                        id="username"
+                        value={newCompany.username}
+                        onChange={(e) => setNewCompany({...newCompany, username: e.target.value})}
+                        placeholder="techcorp_user"
                         required
                       />
                     </div>
@@ -155,7 +165,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle>Empresas Registradas</CardTitle>
                   <CardDescription>
-                    Lista de todas las empresas en la plataforma
+                    Lista de todas las empresas y sus credenciales
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -164,7 +174,7 @@ const AdminDashboard = () => {
                       <div key={company.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-semibold">{company.name}</h4>
-                          <p className="text-sm text-gray-600">{company.email}</p>
+                          <p className="text-sm text-gray-600">Usuario: {company.username}</p>
                           <p className="text-xs text-gray-500">RUT: {company.rut}</p>
                         </div>
                         <div className="flex items-center space-x-2">
