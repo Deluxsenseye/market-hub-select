@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileImage, ShoppingCart, Users, User } from "lucide-react";
+import { FileImage, ShoppingCart, Users, User, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +14,9 @@ const CompanyDashboard = () => {
     { id: 1, name: "Laptop HP ProBook", price: 850000, stock: 15, image: null },
     { id: 2, name: "Monitor Samsung 24''", price: 180000, stock: 8, image: null },
     { id: 3, name: "Teclado Mecánico RGB", price: 45000, stock: 25, image: null },
+    { id: 4, name: "Mouse Logitech Inalámbrico", price: 35000, stock: 12, image: null },
+    { id: 5, name: "Impresora HP LaserJet", price: 220000, stock: 5, image: null },
+    { id: 6, name: "Webcam Logitech HD", price: 75000, stock: 18, image: null },
   ]);
 
   const [orders, setOrders] = useState([
@@ -22,6 +24,8 @@ const CompanyDashboard = () => {
     { id: 2, customer: "María González", items: 1, total: 850000, status: "completed", date: "2024-01-14" },
     { id: 3, customer: "Carlos López", items: 2, total: 225000, status: "processing", date: "2024-01-13" },
   ]);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,6 +35,11 @@ const CompanyDashboard = () => {
     rut: "12.345.678-9",
     storeUrl: "https://marketplace.com/store/techcorp"
   };
+
+  // Filter products based on search term
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -124,25 +133,46 @@ const CompanyDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Search Filter */}
+                <div className="mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Buscar productos por nombre..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-4">
-                  {products.map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <FileImage className="w-8 h-8 text-gray-400" />
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <FileImage className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">{product.name}</h4>
+                            <p className="text-sm text-gray-600">${product.price.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">Stock: {product.stock} unidades</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold">{product.name}</h4>
-                          <p className="text-sm text-gray-600">${product.price.toLocaleString()}</p>
-                          <p className="text-xs text-gray-500">Stock: {product.stock} unidades</p>
+                        <div className="flex items-center space-x-2">
+                          <Button size="sm" variant="outline">Editar</Button>
+                          <Button size="sm" variant="outline">Eliminar</Button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="outline">Editar</Button>
-                        <Button size="sm" variant="outline">Eliminar</Button>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No se encontraron productos que coincidan con tu búsqueda</p>
+                      <p className="text-sm text-gray-500">Intenta con otro término de búsqueda</p>
                     </div>
-                  ))}
+                  )}
                 </div>
                 <Button className="w-full mt-4">Agregar Producto Manual</Button>
               </CardContent>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,9 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Users, ShoppingCart, FileImage } from "lucide-react";
+import { Users, Settings, Trash2, Edit, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const AdminDashboard = () => {
   const [companies, setCompanies] = useState([
@@ -23,13 +32,14 @@ const AdminDashboard = () => {
     password: ""
   });
 
+  const [editingCompany, setEditingCompany] = useState(null);
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleCreateCompany = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validar que el usuario no exista
     const userExists = companies.some(company => company.username === newCompany.username);
     if (userExists) {
       toast({
@@ -48,15 +58,51 @@ const AdminDashboard = () => {
     setCompanies([...companies, company]);
     setNewCompany({ name: "", rut: "", username: "", password: "" });
     toast({
-      title: "Empresa creada",
-      description: `${newCompany.name} con usuario "${newCompany.username}" ha sido registrada exitosamente`,
+      title: "Usuario creado",
+      description: `${newCompany.name} con usuario "${newCompany.username}" ha sido registrado exitosamente`,
+    });
+  };
+
+  const handleEditCompany = (company) => {
+    setEditingCompany({...company});
+  };
+
+  const handleUpdateCompany = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCompanies(companies.map(company => 
+      company.id === editingCompany.id ? editingCompany : company
+    ));
+    setEditingCompany(null);
+    toast({
+      title: "Usuario actualizado",
+      description: "Los datos del usuario han sido actualizados exitosamente",
+    });
+  };
+
+  const handleToggleStatus = (id: number) => {
+    setCompanies(companies.map(company => 
+      company.id === id 
+        ? { ...company, status: company.status === 'active' ? 'inactive' : 'active' }
+        : company
+    ));
+    toast({
+      title: "Estado actualizado",
+      description: "El estado del usuario ha sido modificado",
+    });
+  };
+
+  const handleDeleteCompany = (id: number) => {
+    setCompanies(companies.filter(company => company.id !== id));
+    toast({
+      title: "Usuario eliminado",
+      description: "El usuario ha sido eliminado del sistema",
     });
   };
 
   const stats = [
-    { title: "Empresas Registradas", value: companies.length, icon: Users },
-    { title: "Pedidos Totales", value: "1,247", icon: ShoppingCart },
-    { title: "Productos Activos", value: "15,432", icon: FileImage },
+    { title: "Usuarios Activos", value: companies.filter(c => c.status === 'active').length, icon: Users },
+    { title: "Usuarios Inactivos", value: companies.filter(c => c.status === 'inactive').length, icon: Users },
+    { title: "Total Usuarios", value: companies.length, icon: UserPlus },
   ];
 
   return (
@@ -93,31 +139,33 @@ const AdminDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="companies" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="companies">Gestión de Empresas</TabsTrigger>
-            <TabsTrigger value="orders">Pedidos Globales</TabsTrigger>
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="users">Gestión de Usuarios</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="companies" className="space-y-6">
+          <TabsContent value="users" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
-              {/* Create Company */}
+              {/* Create/Edit User */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Crear Nueva Empresa</CardTitle>
+                  <CardTitle>{editingCompany ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</CardTitle>
                   <CardDescription>
-                    Registra una nueva empresa y crea sus credenciales de acceso
+                    {editingCompany ? 'Modifica los datos del usuario' : 'Registra una nueva empresa y crea sus credenciales de acceso'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleCreateCompany} className="space-y-4">
+                  <form onSubmit={editingCompany ? handleUpdateCompany : handleCreateCompany} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nombre Fantasía</Label>
                       <Input
                         id="name"
-                        value={newCompany.name}
-                        onChange={(e) => setNewCompany({...newCompany, name: e.target.value})}
+                        value={editingCompany ? editingCompany.name : newCompany.name}
+                        onChange={(e) => editingCompany 
+                          ? setEditingCompany({...editingCompany, name: e.target.value})
+                          : setNewCompany({...newCompany, name: e.target.value})
+                        }
                         placeholder="Ej: TechCorp SA"
                         required
                       />
@@ -126,8 +174,11 @@ const AdminDashboard = () => {
                       <Label htmlFor="rut">RUT</Label>
                       <Input
                         id="rut"
-                        value={newCompany.rut}
-                        onChange={(e) => setNewCompany({...newCompany, rut: e.target.value})}
+                        value={editingCompany ? editingCompany.rut : newCompany.rut}
+                        onChange={(e) => editingCompany 
+                          ? setEditingCompany({...editingCompany, rut: e.target.value})
+                          : setNewCompany({...newCompany, rut: e.target.value})
+                        }
                         placeholder="12.345.678-9"
                         required
                       />
@@ -136,8 +187,11 @@ const AdminDashboard = () => {
                       <Label htmlFor="username">Nombre de Usuario</Label>
                       <Input
                         id="username"
-                        value={newCompany.username}
-                        onChange={(e) => setNewCompany({...newCompany, username: e.target.value})}
+                        value={editingCompany ? editingCompany.username : newCompany.username}
+                        onChange={(e) => editingCompany 
+                          ? setEditingCompany({...editingCompany, username: e.target.value})
+                          : setNewCompany({...newCompany, username: e.target.value})
+                        }
                         placeholder="techcorp_user"
                         required
                       />
@@ -147,68 +201,91 @@ const AdminDashboard = () => {
                       <Input
                         id="password"
                         type="password"
-                        value={newCompany.password}
-                        onChange={(e) => setNewCompany({...newCompany, password: e.target.value})}
+                        value={editingCompany ? editingCompany.password || '' : newCompany.password}
+                        onChange={(e) => editingCompany 
+                          ? setEditingCompany({...editingCompany, password: e.target.value})
+                          : setNewCompany({...newCompany, password: e.target.value})
+                        }
                         placeholder="••••••••"
-                        required
+                        required={!editingCompany}
                       />
                     </div>
-                    <Button type="submit" className="w-full">
-                      Crear Empresa
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button type="submit" className="flex-1">
+                        {editingCompany ? 'Actualizar Usuario' : 'Crear Usuario'}
+                      </Button>
+                      {editingCompany && (
+                        <Button type="button" variant="outline" onClick={() => setEditingCompany(null)}>
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
                   </form>
                 </CardContent>
               </Card>
 
-              {/* Companies List */}
+              {/* Users Table */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Empresas Registradas</CardTitle>
+                  <CardTitle>Usuarios Registrados</CardTitle>
                   <CardDescription>
-                    Lista de todas las empresas y sus credenciales
+                    Gestiona todos los usuarios del sistema
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {companies.map((company) => (
-                      <div key={company.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h4 className="font-semibold">{company.name}</h4>
-                          <p className="text-sm text-gray-600">Usuario: {company.username}</p>
-                          <p className="text-xs text-gray-500">RUT: {company.rut}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={company.status === 'active' ? 'default' : 'secondary'}>
-                            {company.status === 'active' ? 'Activa' : 'Pendiente'}
-                          </Badge>
-                          <Button size="sm" variant="outline">
-                            Ver Tienda
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Empresa</TableHead>
+                        <TableHead>Usuario</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {companies.map((company) => (
+                        <TableRow key={company.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{company.name}</p>
+                              <p className="text-xs text-gray-500">{company.rut}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{company.username}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={company.status === 'active' ? 'default' : 'secondary'}
+                              className="cursor-pointer"
+                              onClick={() => handleToggleStatus(company.id)}
+                            >
+                              {company.status === 'active' ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditCompany(company)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteCompany(company.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pedidos Globales</CardTitle>
-                <CardDescription>
-                  Visualiza todos los pedidos de todas las empresas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Panel de pedidos globales en desarrollo</p>
-                  <p className="text-sm text-gray-500">Aquí verás estadísticas y reportes de ventas</p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="settings">
@@ -224,7 +301,7 @@ const AdminDashboard = () => {
                   <div>
                     <Label htmlFor="platform-logo">Logo de la Plataforma</Label>
                     <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                      <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                      <Settings className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Haz clic para cargar tu logo</p>
                     </div>
                   </div>
