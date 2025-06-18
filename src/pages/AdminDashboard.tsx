@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,64 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, User, Settings, Users, Palette, BarChart3, FileText, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { ShoppingCart, User, Settings, Users, Palette, BarChart3, FileText, Edit, Trash2, Plus, Eye, EyeOff } from "lucide-react";
 
 const AdminDashboard = () => {
-  const [companies, setCompanies] = useState([
-    { 
-      id: 1, 
-      name: "TechCorp SA", 
-      rut: "12.345.678-9", 
-      username: "techcorp_user", 
-      password: "tech123",
-      status: "active",
-      cartEnabled: true,
-      logo: null,
-      logoPreview: null,
-      primaryColor: "#8b5cf6",
-      secondaryColor: "#3b82f6",
-      backgroundColor: "#f8fafc",
-      cardColor: "#ffffff",
-      buttonColor: "#10b981",
-      slogan: "Especialistas en tecnología empresarial",
-      consultEmail: "consultas@techcorp.com",
-      salesEmail: "ventas@techcorp.com",
-      erpImportEndpoint: "",
-      erpExportEndpoint: "",
-      erpApiKey: ""
-    },
-    { 
-      id: 2, 
-      name: "InnovaShop", 
-      rut: "98.765.432-1", 
-      username: "innovashop_user", 
-      password: "innova123",
-      status: "active",
-      cartEnabled: true,
-      logo: null,
-      logoPreview: null,
-      primaryColor: "#3b82f6",
-      secondaryColor: "#8b5cf6",
-      backgroundColor: "#f1f5f9",
-      cardColor: "#ffffff",
-      buttonColor: "#f59e0b",
-      slogan: "Innovación en cada producto",
-      consultEmail: "info@innovashop.com",
-      salesEmail: "pedidos@innovashop.com",
-      erpImportEndpoint: "",
-      erpExportEndpoint: "",
-      erpApiKey: ""
-    },
+  const [companies, setCompanies] = useState([]);
+  const [adminUsers, setAdminUsers] = useState([
+    { id: 1, username: "ADM", password: "ADM123" }
   ]);
+  const [newAdminUser, setNewAdminUser] = useState({ username: "", password: "" });
 
   const [adminConfig, setAdminConfig] = useState({
-    username: "ADM",
-    password: "ADM123",
-    logo: null,
-    logoPreview: null,
     primaryColor: "#8b5cf6",
     secondaryColor: "#3b82f6",
-    backgroundColor: "#f8fafc"
+    backgroundColor: "#f8fafc",
+    logoPreview: null,
+    mainLogoPreview: null
   });
 
   const [editingCompany, setEditingCompany] = useState(null);
@@ -74,7 +30,6 @@ const AdminDashboard = () => {
     rut: "",
     username: "",
     password: "",
-    logo: null,
     logoPreview: null,
     primaryColor: "#8b5cf6",
     secondaryColor: "#3b82f6",
@@ -93,21 +48,35 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Cargar datos desde localStorage
     const savedCompanies = localStorage.getItem('companies');
     const savedAdminConfig = localStorage.getItem('adminConfig');
+    const savedAdminUsers = localStorage.getItem('adminUsers');
     
     if (savedCompanies) {
       setCompanies(JSON.parse(savedCompanies));
     }
     if (savedAdminConfig) {
-      setAdminConfig(JSON.parse(savedAdminConfig));
+      const config = JSON.parse(savedAdminConfig);
+      setAdminConfig(config);
+      applyAdminColors(config);
+    }
+    if (savedAdminUsers) {
+      setAdminUsers(JSON.parse(savedAdminUsers));
     }
   }, []);
 
-  const saveToLocalStorage = (companiesData, adminData) => {
+  const applyAdminColors = (config) => {
+    document.documentElement.style.setProperty('--primary', config.primaryColor);
+    document.documentElement.style.setProperty('--secondary', config.secondaryColor);
+    document.documentElement.style.setProperty('--background', config.backgroundColor);
+  };
+
+  const saveToLocalStorage = (companiesData, adminData, adminUsersData = null) => {
     localStorage.setItem('companies', JSON.stringify(companiesData));
     localStorage.setItem('adminConfig', JSON.stringify(adminData));
+    if (adminUsersData) {
+      localStorage.setItem('adminUsers', JSON.stringify(adminUsersData));
+    }
   };
 
   const handleCreateCompany = (e) => {
@@ -137,7 +106,6 @@ const AdminDashboard = () => {
       rut: "", 
       username: "", 
       password: "", 
-      logo: null,
       logoPreview: null,
       primaryColor: "#8b5cf6",
       secondaryColor: "#3b82f6",
@@ -153,7 +121,7 @@ const AdminDashboard = () => {
     });
     toast({
       title: "Empresa creada",
-      description: `${newCompany.name} ha sido registrada exitosamente`,
+      description: `${company.name} ha sido registrada exitosamente`,
     });
   };
 
@@ -176,19 +144,51 @@ const AdminDashboard = () => {
   const handleUpdateAdminConfig = (e) => {
     e.preventDefault();
     saveToLocalStorage(companies, adminConfig);
+    applyAdminColors(adminConfig);
     toast({
       title: "Configuración actualizada",
-      description: "Los datos del administrador han sido actualizados",
+      description: "Los colores del sistema han sido actualizados",
     });
   };
 
-  const handleLogoUpload = (event, isAdmin = false, companyId = null) => {
+  const handleAddAdminUser = (e) => {
+    e.preventDefault();
+    if (!newAdminUser.username || !newAdminUser.password) return;
+    
+    const userExists = adminUsers.some(user => user.username === newAdminUser.username);
+    if (userExists) {
+      toast({
+        title: "Error",
+        description: "El usuario administrador ya existe",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      ...newAdminUser
+    };
+    const updatedAdminUsers = [...adminUsers, newUser];
+    setAdminUsers(updatedAdminUsers);
+    saveToLocalStorage(companies, adminConfig, updatedAdminUsers);
+    setNewAdminUser({ username: "", password: "" });
+    
+    toast({
+      title: "Administrador agregado",
+      description: "Nuevo usuario administrador creado exitosamente",
+    });
+  };
+
+  const handleLogoUpload = (event, logoType = 'main') => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (isAdmin) {
+        if (logoType === 'main') {
           setAdminConfig({...adminConfig, logoPreview: e.target?.result});
+        } else if (logoType === 'mainScreen') {
+          setAdminConfig({...adminConfig, mainLogoPreview: e.target?.result});
         } else if (editingCompany) {
           setEditingCompany({...editingCompany, logoPreview: e.target?.result});
         } else {
@@ -245,20 +245,13 @@ const AdminDashboard = () => {
     return `${window.location.origin}/store/${companyId}`;
   };
 
-  const applySystemColors = () => {
-    // Aplicar colores del sistema
-    document.documentElement.style.setProperty('--primary', adminConfig.primaryColor);
-    document.documentElement.style.setProperty('--secondary', adminConfig.secondaryColor);
-    document.documentElement.style.setProperty('--background', adminConfig.backgroundColor);
-    
-    toast({
-      title: "Colores aplicados",
-      description: "Los colores del sistema han sido actualizados",
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div 
+      className="min-h-screen"
+      style={{ 
+        background: `linear-gradient(135deg, ${adminConfig.backgroundColor} 0%, ${adminConfig.primaryColor}20 50%, ${adminConfig.secondaryColor}20 100%)`
+      }}
+    >
       {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
@@ -271,12 +264,17 @@ const AdminDashboard = () => {
                   className="max-h-8"
                 />
               ) : (
-                <ShoppingCart className="w-8 h-8 text-primary" />
+                <ShoppingCart className="w-8 h-8" style={{ color: adminConfig.primaryColor }} />
               )}
-              <h1 className="text-2xl font-bold gradient-text">Panel de Administración - ATG Informática</h1>
+              <h1 className="text-2xl font-bold" style={{ color: adminConfig.primaryColor }}>Panel de Administración - ATG Informática</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="secondary">Administrador</Badge>
+              <Badge 
+                variant="secondary" 
+                style={{ backgroundColor: adminConfig.primaryColor, color: 'white' }}
+              >
+                Administrador
+              </Badge>
               <Button variant="outline" onClick={() => navigate('/')}>
                 Salir
               </Button>
@@ -315,32 +313,79 @@ const AdminDashboard = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Configuración del Administrador</CardTitle>
+                  <CardTitle>Usuarios Administradores</CardTitle>
                   <CardDescription>
-                    Cambiar credenciales del administrador ADM
+                    Gestiona los usuarios con acceso de administrador
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Usuarios Administradores Existentes</Label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {adminUsers.map((user) => (
+                        <div key={user.id} className="flex justify-between items-center p-2 border rounded">
+                          <span className="font-medium">{user.username}</span>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => {
+                              const updatedUsers = adminUsers.filter(u => u.id !== user.id);
+                              setAdminUsers(updatedUsers);
+                              saveToLocalStorage(companies, adminConfig, updatedUsers);
+                              toast({ title: "Usuario eliminado", description: "Usuario administrador eliminado" });
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleAddAdminUser} className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-admin-username">Nuevo Usuario Administrador</Label>
+                      <Input
+                        id="new-admin-username"
+                        value={newAdminUser.username}
+                        onChange={(e) => setNewAdminUser({...newAdminUser, username: e.target.value})}
+                        placeholder="Usuario administrador"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-admin-password">Contraseña</Label>
+                      <Input
+                        id="new-admin-password"
+                        type="password"
+                        value={newAdminUser.password}
+                        onChange={(e) => setNewAdminUser({...newAdminUser, password: e.target.value})}
+                        placeholder="Contraseña"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Administrador
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Configurar Panel - Moved logos and colors here */}
+          <TabsContent value="panel-config">
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configuración Visual del Sistema</CardTitle>
+                  <CardDescription>
+                    Personaliza los colores y apariencia general de la plataforma
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleUpdateAdminConfig} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-username">Usuario Administrador</Label>
-                      <Input
-                        id="admin-username"
-                        value={adminConfig.username}
-                        onChange={(e) => setAdminConfig({...adminConfig, username: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-password">Contraseña</Label>
-                      <Input
-                        id="admin-password"
-                        type="password"
-                        value={adminConfig.password}
-                        onChange={(e) => setAdminConfig({...adminConfig, password: e.target.value})}
-                        required
-                      />
-                    </div>
                     <div className="space-y-2">
                       <Label>Colores del Sistema</Label>
                       <div className="grid grid-cols-3 gap-2">
@@ -374,7 +419,7 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <Button type="submit" className="w-full">
-                      Actualizar Credenciales
+                      Aplicar Cambios de Color
                     </Button>
                   </form>
                 </CardContent>
@@ -382,36 +427,56 @@ const AdminDashboard = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Logo ATG Informática</CardTitle>
+                  <CardTitle>Logos ATG Informática</CardTitle>
                   <CardDescription>
-                    Logo de ATG que aparece en todo el sistema
+                    Gestiona los logos del sistema
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                      {adminConfig.logoPreview ? (
-                        <div className="relative inline-block">
+                    <div>
+                      <Label>Logo Sistema (Headers/Footers)</Label>
+                      <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                        {adminConfig.logoPreview ? (
                           <img 
                             src={adminConfig.logoPreview} 
-                            alt="Logo ATG" 
-                            className="max-h-32 max-w-full object-contain mx-auto mb-2 border-2 border-gray-200 rounded"
-                            style={{ resize: 'both', overflow: 'auto' }}
+                            alt="Logo ATG Sistema" 
+                            className="max-h-16 max-w-full object-contain mx-auto mb-2"
                           />
-                          <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 cursor-se-resize"></div>
-                        </div>
-                      ) : (
-                        <User className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-                      )}
-                      <p className="text-sm text-gray-600 font-medium">Logo actual de ATG</p>
-                      <p className="text-xs text-gray-500">Se mostrará en todo el sistema</p>
+                        ) : (
+                          <User className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        )}
+                        <p className="text-xs text-gray-500">Logo para headers y footers</p>
+                      </div>
+                      <Input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => handleLogoUpload(e, 'main')}
+                        className="mt-2"
+                      />
                     </div>
-                    <Input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => handleLogoUpload(e, true)}
-                    />
-                    <Button className="w-full">Actualizar Logo ATG</Button>
+
+                    <div>
+                      <Label>Logo Pantalla Principal</Label>
+                      <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                        {adminConfig.mainLogoPreview ? (
+                          <img 
+                            src={adminConfig.mainLogoPreview} 
+                            alt="Logo ATG Pantalla Principal" 
+                            className="max-h-20 max-w-full object-contain mx-auto mb-2"
+                          />
+                        ) : (
+                          <User className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                        )}
+                        <p className="text-xs text-gray-500">Logo destacado para pantalla principal</p>
+                      </div>
+                      <Input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => handleLogoUpload(e, 'mainScreen')}
+                        className="mt-2"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -421,7 +486,6 @@ const AdminDashboard = () => {
           {/* Administrar Usuarios Empresas */}
           <TabsContent value="companies">
             <div className="grid lg:grid-cols-2 gap-6">
-              {/* Crear/Editar Empresa */}
               <Card>
                 <CardHeader>
                   <CardTitle>{editingCompany ? 'Editar Empresa' : 'Crear Nueva Empresa'}</CardTitle>
@@ -602,15 +666,11 @@ const AdminDashboard = () => {
                       <Label>Logo de la Empresa</Label>
                       <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
                         {(editingCompany?.logoPreview || newCompany.logoPreview) ? (
-                          <div className="relative inline-block">
-                            <img 
-                              src={editingCompany?.logoPreview || newCompany.logoPreview} 
-                              alt="Logo Empresa" 
-                              className="max-h-20 max-w-full object-contain mx-auto mb-2 border-2 border-gray-200 rounded"
-                              style={{ resize: 'both', overflow: 'auto' }}
-                            />
-                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 cursor-se-resize"></div>
-                          </div>
+                          <img 
+                            src={editingCompany?.logoPreview || newCompany.logoPreview} 
+                            alt="Logo Empresa" 
+                            className="max-h-20 max-w-full object-contain mx-auto mb-2 border rounded"
+                          />
                         ) : (
                           <User className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                         )}
@@ -619,7 +679,7 @@ const AdminDashboard = () => {
                       <Input 
                         type="file" 
                         accept="image/*" 
-                        onChange={(e) => handleLogoUpload(e, false)}
+                        onChange={(e) => handleLogoUpload(e, 'company')}
                       />
                     </div>
 
@@ -637,7 +697,6 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Lista de Empresas */}
               <Card>
                 <CardHeader>
                   <CardTitle>Empresas Registradas</CardTitle>
@@ -664,20 +723,16 @@ const AdminDashboard = () => {
                             <p className="text-sm text-gray-600">RUT: {company.rut}</p>
                             <p className="text-sm text-gray-600">Usuario: {company.username}</p>
                             <p className="text-sm text-gray-500">Slogan: {company.slogan || 'Sin slogan'}</p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className="text-xs text-gray-500">Colores:</span>
-                              <div className="flex space-x-1">
-                                <div className="w-4 h-4 rounded border" style={{ backgroundColor: company.primaryColor }}></div>
-                                <div className="w-4 h-4 rounded border" style={{ backgroundColor: company.secondaryColor }}></div>
-                                <div className="w-4 h-4 rounded border" style={{ backgroundColor: company.buttonColor }}></div>
-                              </div>
-                            </div>
                           </div>
                           <div className="flex flex-col space-y-1">
                             <Badge 
                               variant={company.status === 'active' ? 'default' : 'secondary'}
                               className="cursor-pointer"
                               onClick={() => handleToggleStatus(company.id)}
+                              style={{ 
+                                backgroundColor: company.status === 'active' ? adminConfig.primaryColor : '#6b7280',
+                                color: 'white'
+                              }}
                             >
                               {company.status === 'active' ? 'Activo' : 'Inactivo'}
                             </Badge>
@@ -685,6 +740,10 @@ const AdminDashboard = () => {
                               variant={company.cartEnabled ? 'default' : 'destructive'}
                               className="cursor-pointer"
                               onClick={() => handleToggleCart(company.id)}
+                              style={{ 
+                                backgroundColor: company.cartEnabled ? adminConfig.secondaryColor : '#dc2626',
+                                color: 'white'
+                              }}
                             >
                               {company.cartEnabled ? 'Carrito Activo' : 'Carrito Inhabilitado'}
                             </Badge>
@@ -713,63 +772,6 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          {/* Configurar Panel */}
-          <TabsContent value="panel-config">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuración Visual del Panel</CardTitle>
-                <CardDescription>
-                  Personaliza los colores y apariencia general de la plataforma
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Color Principal del Sistema</Label>
-                      <Input 
-                        type="color" 
-                        value={adminConfig.primaryColor}
-                        onChange={(e) => setAdminConfig({...adminConfig, primaryColor: e.target.value})}
-                        className="h-12" 
-                      />
-                    </div>
-                    <div>
-                      <Label>Color Secundario</Label>
-                      <Input 
-                        type="color" 
-                        value={adminConfig.secondaryColor}
-                        onChange={(e) => setAdminConfig({...adminConfig, secondaryColor: e.target.value})}
-                        className="h-12" 
-                      />
-                    </div>
-                    <div>
-                      <Label>Color de Fondo</Label>
-                      <Input 
-                        type="color" 
-                        value={adminConfig.backgroundColor}
-                        onChange={(e) => setAdminConfig({...adminConfig, backgroundColor: e.target.value})}
-                        className="h-12" 
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="p-4 border rounded-lg" style={{ 
-                      background: `linear-gradient(135deg, ${adminConfig.primaryColor} 0%, ${adminConfig.secondaryColor} 100%)`
-                    }}>
-                      <h3 className="text-white font-semibold mb-2">Vista Previa</h3>
-                      <p className="text-white/80 text-sm">Así se verán los colores aplicados</p>
-                    </div>
-                    <Button onClick={applySystemColors} className="w-full">
-                      Aplicar Cambios de Color
-                    </Button>
-                    <p className="text-xs text-gray-500">Los cambios se aplicarán a todo el sistema</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Configuración ERP por Empresa */}
@@ -911,7 +913,7 @@ const AdminDashboard = () => {
         </Tabs>
       </div>
 
-      {/* Footer con logo ATG */}
+      {/* Footer */}
       <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 py-4 mt-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2">

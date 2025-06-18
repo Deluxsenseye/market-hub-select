@@ -11,7 +11,8 @@ const Index = () => {
     primaryColor: "#8b5cf6",
     secondaryColor: "#3b82f6",
     backgroundColor: "#f8fafc",
-    logoPreview: null
+    logoPreview: null,
+    mainLogoPreview: null
   });
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const Index = () => {
       // Aplicar colores dinámicos
       document.documentElement.style.setProperty('--primary', config.primaryColor);
       document.documentElement.style.setProperty('--secondary', config.secondaryColor);
+      document.documentElement.style.setProperty('--background', config.backgroundColor);
     }
   }, []);
 
@@ -45,11 +47,15 @@ const Index = () => {
                   className="max-h-12"
                 />
               ) : (
-                <ShoppingCart className="w-8 h-8 text-primary" />
+                <ShoppingCart className="w-8 h-8" style={{ color: adminConfig.primaryColor }} />
               )}
-              <h1 className="text-2xl font-bold gradient-text">Carrito de compras ATG Informática</h1>
+              <h1 className="text-2xl font-bold" style={{ color: adminConfig.primaryColor }}>Carrito de compras ATG Informática</h1>
             </div>
-            <Button onClick={() => navigate('/login')} variant="outline">
+            <Button 
+              onClick={() => navigate('/login')} 
+              variant="outline"
+              style={{ borderColor: adminConfig.primaryColor, color: adminConfig.primaryColor }}
+            >
               Iniciar Sesión
             </Button>
           </div>
@@ -60,12 +66,20 @@ const Index = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="mb-8">
-            {adminConfig.logoPreview && (
+            {adminConfig.mainLogoPreview ? (
+              <img 
+                src={adminConfig.mainLogoPreview} 
+                alt="ATG Informática" 
+                className="max-h-32 mx-auto mb-6"
+              />
+            ) : adminConfig.logoPreview ? (
               <img 
                 src={adminConfig.logoPreview} 
                 alt="ATG Informática" 
-                className="max-h-24 mx-auto mb-6"
+                className="max-h-32 mx-auto mb-6"
               />
+            ) : (
+              <ShoppingCart className="w-24 h-24 mx-auto mb-6" style={{ color: adminConfig.primaryColor }} />
             )}
           </div>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
@@ -95,11 +109,11 @@ const Index = () => {
       {/* Features */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-12 gradient-text">
+          <h3 className="text-3xl font-bold text-center mb-12" style={{ color: adminConfig.primaryColor }}>
             Características Principales
           </h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
+            <Card className="hover-scale border-0 shadow-lg bg-white/90 backdrop-blur-sm">
               <CardHeader>
                 <Users className="w-12 h-12 mb-4" style={{ color: adminConfig.primaryColor }} />
                 <CardTitle>Multi-Empresa</CardTitle>
@@ -111,7 +125,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
+            <Card className="hover-scale border-0 shadow-lg bg-white/90 backdrop-blur-sm">
               <CardHeader>
                 <FileImage className="w-12 h-12 mb-4" style={{ color: adminConfig.primaryColor }} />
                 <CardTitle>Carga de Excel</CardTitle>
@@ -123,7 +137,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
+            <Card className="hover-scale border-0 shadow-lg bg-white/90 backdrop-blur-sm">
               <CardHeader>
                 <ShoppingCart className="w-12 h-12 mb-4" style={{ color: adminConfig.primaryColor }} />
                 <CardTitle>Carrito Público</CardTitle>
@@ -135,7 +149,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
+            <Card className="hover-scale border-0 shadow-lg bg-white/90 backdrop-blur-sm">
               <CardHeader>
                 <User className="w-12 h-12 mb-4" style={{ color: adminConfig.primaryColor }} />
                 <CardTitle>PSIG ERP</CardTitle>
@@ -161,9 +175,9 @@ const Index = () => {
                 className="max-h-6"
               />
             ) : (
-              <ShoppingCart className="w-6 h-6 text-primary" />
+              <ShoppingCart className="w-6 h-6" style={{ color: adminConfig.primaryColor }} />
             )}
-            <span className="text-lg font-semibold gradient-text">ATG Informática</span>
+            <span className="text-lg font-semibold" style={{ color: adminConfig.primaryColor }}>ATG Informática</span>
           </div>
           <p className="text-gray-600">
             Especialistas en tecnología empresarial

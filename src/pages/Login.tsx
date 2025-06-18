@@ -17,10 +17,12 @@ const Login = () => {
     password: "ADM123",
     logo: null,
     logoPreview: null,
+    mainLogoPreview: null,
     primaryColor: "#8b5cf6",
     secondaryColor: "#3b82f6",
     backgroundColor: "#f8fafc"
   });
+  const [companies, setCompanies] = useState([]);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -28,8 +30,13 @@ const Login = () => {
   useEffect(() => {
     // Cargar configuración del admin desde localStorage
     const savedConfig = localStorage.getItem('adminConfig');
+    const savedCompanies = localStorage.getItem('companies');
+    
     if (savedConfig) {
       setAdminConfig(JSON.parse(savedConfig));
+    }
+    if (savedCompanies) {
+      setCompanies(JSON.parse(savedCompanies));
     }
   }, []);
 
@@ -38,24 +45,36 @@ const Login = () => {
     setIsLoading(true);
 
     setTimeout(() => {
+      // Verificar si es administrador
       if (username === adminConfig.username && password === adminConfig.password) {
         toast({
           title: "Acceso concedido",
           description: "Bienvenido al panel de administración",
         });
         navigate("/admin");
-      } else if (username.length > 0 && password.length > 3) {
-        toast({
-          title: "Acceso concedido",
-          description: "Bienvenido a tu carrito de compras",
-        });
-        navigate("/dashboard");
       } else {
-        toast({
-          title: "Error de acceso",
-          description: "Credenciales incorrectas",
-          variant: "destructive",
-        });
+        // Verificar si es usuario empresa
+        const company = companies.find(comp => 
+          comp.username === username && 
+          comp.password === password && 
+          comp.status === 'active'
+        );
+        
+        if (company) {
+          // Guardar la empresa logueada en localStorage
+          localStorage.setItem('currentCompany', JSON.stringify(company));
+          toast({
+            title: "Acceso concedido",
+            description: `Bienvenido ${company.name}`,
+          });
+          navigate("/dashboard");
+        } else {
+          toast({
+            title: "Error de acceso",
+            description: "Credenciales incorrectas o cuenta inactiva",
+            variant: "destructive",
+          });
+        }
       }
       setIsLoading(false);
     }, 1000);
@@ -124,7 +143,6 @@ const Login = () => {
             </Button>
           </form>
           
-          {/* Footer con logo ATG pequeño */}
           <div className="text-center pt-4 border-t border-white/20">
             <div className="flex items-center justify-center space-x-2">
               <ShoppingCart className="w-4 h-4 text-white/60" />
