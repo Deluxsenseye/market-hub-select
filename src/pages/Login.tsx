@@ -19,19 +19,17 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulación de login - aquí irá la integración con Supabase
     setTimeout(() => {
-      if (username === "admin" && password === "admin123") {
+      if (username === "ADM" && password === "ADM123") {
         toast({
           title: "Acceso concedido",
           description: "Bienvenido al panel de administración",
         });
         navigate("/admin");
       } else if (username.length > 0 && password.length > 3) {
-        // Simulación de usuarios de empresa
         toast({
           title: "Acceso concedido",
-          description: "Bienvenido a tu dashboard empresarial",
+          description: "Bienvenido a tu carrito de compras",
         });
         navigate("/dashboard");
       } else {
@@ -51,11 +49,11 @@ const Login = () => {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <ShoppingCart className="w-8 h-8 text-white" />
-            <h1 className="text-2xl font-bold text-white">B2B Marketplace</h1>
+            <h1 className="text-2xl font-bold text-white">Carrito de compras ATG Informática</h1>
           </div>
           <CardTitle className="text-white">Iniciar Sesión</CardTitle>
           <CardDescription className="text-gray-200">
-            Accede a tu dashboard empresarial
+            Accede a tu carrito de compras
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,7 +67,7 @@ const Login = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-300"
+                className="bg-white/90 border-white/20 text-black placeholder:text-gray-500"
               />
             </div>
             <div className="space-y-2">
@@ -81,7 +79,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-300"
+                className="bg-white/90 border-white/20 text-black placeholder:text-gray-500"
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -91,7 +89,7 @@ const Login = () => {
           
           <div className="mt-6 p-4 bg-white/10 rounded-lg">
             <p className="text-sm text-gray-200 mb-2">Demo de acceso:</p>
-            <p className="text-xs text-gray-300">Admin: admin / admin123</p>
+            <p className="text-xs text-gray-300">Admin: ADM / ADM123</p>
             <p className="text-xs text-gray-300">Empresa: cualquier_usuario / password</p>
           </div>
         </CardContent>

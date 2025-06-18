@@ -15,7 +15,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <ShoppingCart className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold gradient-text">B2B Marketplace</h1>
+              <h1 className="text-2xl font-bold gradient-text">Carrito de compras ATG Informática</h1>
             </div>
             <Button onClick={() => navigate('/login')} variant="outline">
               Iniciar Sesión
@@ -28,15 +28,14 @@ const Index = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <h2 className="text-5xl font-bold mb-6 gradient-text animate-fade-in">
-            Plataforma de Comercio B2B
+            Carrito de compras ATG Informática
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Conecta empresas con sus clientes a través de tiendas online personalizadas. 
-            Gestiona inventarios, procesa pedidos y expande tu negocio digitalmente.
+            Plataforma de comercio empresarial para gestionar inventarios, procesar pedidos y expandir tu negocio digitalmente.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" onClick={() => navigate('/login')} className="hover-scale">
-              Acceder a mi Dashboard
+              Acceder a mi Carrito
             </Button>
             <Button size="lg" variant="outline" className="hover-scale">
               Ver Demo
@@ -59,7 +58,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Cada empresa tiene su espacio privado y personalizado con acceso exclusivo a sus datos.
+                  Cada empresa tiene su carrito personalizado con acceso exclusivo a sus productos.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -79,11 +78,11 @@ const Index = () => {
             <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
               <CardHeader>
                 <ShoppingCart className="w-12 h-12 text-primary mb-4" />
-                <CardTitle>Tienda Pública</CardTitle>
+                <CardTitle>Carrito Público</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Cada empresa obtiene una URL única para compartir su catálogo con clientes.
+                  Cada empresa obtiene una URL única para compartir su carrito con clientes.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -91,11 +90,11 @@ const Index = () => {
             <Card className="hover-scale border-0 shadow-lg bg-card-gradient">
               <CardHeader>
                 <User className="w-12 h-12 text-primary mb-4" />
-                <CardTitle>Branding Personal</CardTitle>
+                <CardTitle>Integración ERP</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Personaliza tu tienda con logo y colores de tu empresa para una experiencia única.
+                  Sincronización automática con sistemas ERP para productos y transacciones.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -108,10 +107,10 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <ShoppingCart className="w-6 h-6 text-primary" />
-            <span className="text-lg font-semibold gradient-text">B2B Marketplace</span>
+            <span className="text-lg font-semibold gradient-text">Carrito de compras ATG Informática</span>
           </div>
           <p className="text-gray-600">
-            Desarrollado con ❤️ para conectar empresas y expandir negocios
+            Desarrollado para conectar empresas y expandir negocios digitalmente
           </p>
         </div>
       </footer>
