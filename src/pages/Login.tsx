@@ -86,12 +86,6 @@ const Login = () => {
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </form>
-          
-          <div className="mt-6 p-4 bg-white/10 rounded-lg">
-            <p className="text-sm text-gray-200 mb-2">Demo de acceso:</p>
-            <p className="text-xs text-gray-300">Admin: ADM / ADM123</p>
-            <p className="text-xs text-gray-300">Empresa: cualquier_usuario / password</p>
-          </div>
         </CardContent>
       </Card>
     </div>
