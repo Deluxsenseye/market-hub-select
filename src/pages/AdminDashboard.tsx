@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +97,16 @@ const AdminDashboard = () => {
 
   const handleCreateCompany = (e) => {
     e.preventDefault();
+    
+    if (!newCompany.name || !newCompany.rut || !newCompany.username || !newCompany.password) {
+      toast({
+        title: "Error",
+        description: "Todos los campos son obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const userExists = companies.some(company => company.username === newCompany.username);
     if (userExists) {
       toast({
@@ -136,6 +145,7 @@ const AdminDashboard = () => {
       erpExportEndpoint: "",
       erpApiKey: ""
     });
+    
     toast({
       title: "Empresa creada",
       description: `${company.name} ha sido registrada exitosamente`,
@@ -145,6 +155,15 @@ const AdminDashboard = () => {
   const handleUpdateCompany = (e) => {
     e.preventDefault();
     if (!editingCompany) return;
+    
+    if (!editingCompany.name || !editingCompany.rut || !editingCompany.username) {
+      toast({
+        title: "Error",
+        description: "Los campos nombre, RUT y usuario son obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const updatedCompanies = companies.map(company => 
       company.id === editingCompany.id ? editingCompany : company
