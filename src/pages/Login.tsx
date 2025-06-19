@@ -13,15 +13,15 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [adminConfig, setAdminConfig] = useState({
-    username: "ADM",
-    password: "ADM123",
-    logo: null,
-    logoPreview: null,
-    mainLogoPreview: null,
     primaryColor: "#8b5cf6",
     secondaryColor: "#3b82f6",
-    backgroundColor: "#f8fafc"
+    backgroundColor: "#f8fafc",
+    logoPreview: null,
+    mainLogoPreview: null
   });
+  const [adminUsers, setAdminUsers] = useState([
+    { id: 1, username: "ADM", password: "ADM123" }
+  ]);
   const [companies, setCompanies] = useState([]);
   
   const navigate = useNavigate();
@@ -31,12 +31,24 @@ const Login = () => {
     // Cargar configuración del admin desde localStorage
     const savedConfig = localStorage.getItem('adminConfig');
     const savedCompanies = localStorage.getItem('companies');
+    const savedAdminUsers = localStorage.getItem('adminUsers');
+    
+    console.log('Loading saved data:', { savedConfig, savedCompanies, savedAdminUsers });
     
     if (savedConfig) {
-      setAdminConfig(JSON.parse(savedConfig));
+      const config = JSON.parse(savedConfig);
+      setAdminConfig(config);
+      console.log('Loaded admin config:', config);
     }
     if (savedCompanies) {
-      setCompanies(JSON.parse(savedCompanies));
+      const companiesData = JSON.parse(savedCompanies);
+      setCompanies(companiesData);
+      console.log('Loaded companies:', companiesData);
+    }
+    if (savedAdminUsers) {
+      const adminUsersData = JSON.parse(savedAdminUsers);
+      setAdminUsers(adminUsersData);
+      console.log('Loaded admin users:', adminUsersData);
     }
   }, []);
 
@@ -44,9 +56,19 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log('Attempting login with:', { username, password });
+    console.log('Available admin users:', adminUsers);
+    console.log('Available companies:', companies);
+
     setTimeout(() => {
       // Verificar si es administrador
-      if (username === adminConfig.username && password === adminConfig.password) {
+      const isAdmin = adminUsers.some(admin => 
+        admin.username === username && admin.password === password
+      );
+      
+      console.log('Is admin?', isAdmin);
+      
+      if (isAdmin) {
         toast({
           title: "Acceso concedido",
           description: "Bienvenido al panel de administración",
@@ -59,6 +81,8 @@ const Login = () => {
           comp.password === password && 
           comp.status === 'active'
         );
+        
+        console.log('Found company?', company);
         
         if (company) {
           // Guardar la empresa logueada en localStorage

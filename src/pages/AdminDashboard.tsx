@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, User, Settings, Users, Palette, BarChart3, FileText, Edit, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { ShoppingCart, User, Settings, Users, Palette, BarChart3, FileText, Edit, Trash2, Plus } from "lucide-react";
 
 const AdminDashboard = () => {
   const [companies, setCompanies] = useState([]);
@@ -48,22 +48,33 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
     const savedCompanies = localStorage.getItem('companies');
     const savedAdminConfig = localStorage.getItem('adminConfig');
     const savedAdminUsers = localStorage.getItem('adminUsers');
     
+    console.log('Loading admin data:', { savedCompanies, savedAdminConfig, savedAdminUsers });
+    
     if (savedCompanies) {
-      setCompanies(JSON.parse(savedCompanies));
+      const companiesData = JSON.parse(savedCompanies);
+      setCompanies(companiesData);
+      console.log('Loaded companies in admin:', companiesData);
     }
     if (savedAdminConfig) {
       const config = JSON.parse(savedAdminConfig);
       setAdminConfig(config);
       applyAdminColors(config);
+      console.log('Loaded admin config in admin:', config);
     }
     if (savedAdminUsers) {
-      setAdminUsers(JSON.parse(savedAdminUsers));
+      const adminUsersData = JSON.parse(savedAdminUsers);
+      setAdminUsers(adminUsersData);
+      console.log('Loaded admin users in admin:', adminUsersData);
     }
-  }, []);
+  };
 
   const applyAdminColors = (config) => {
     document.documentElement.style.setProperty('--primary', config.primaryColor);
@@ -72,10 +83,12 @@ const AdminDashboard = () => {
   };
 
   const saveToLocalStorage = (companiesData, adminData, adminUsersData = null) => {
+    console.log('Saving to localStorage:', { companiesData, adminData, adminUsersData });
     localStorage.setItem('companies', JSON.stringify(companiesData));
     localStorage.setItem('adminConfig', JSON.stringify(adminData));
-    if (adminUsersData) {
+    if (adminUsersData !== null) {
       localStorage.setItem('adminUsers', JSON.stringify(adminUsersData));
+      console.log('Admin users saved:', adminUsersData);
     }
   };
 
@@ -99,7 +112,7 @@ const AdminDashboard = () => {
     };
     const updatedCompanies = [...companies, company];
     setCompanies(updatedCompanies);
-    saveToLocalStorage(updatedCompanies, adminConfig);
+    saveToLocalStorage(updatedCompanies, adminConfig, adminUsers);
     
     setNewCompany({ 
       name: "", 
@@ -133,7 +146,7 @@ const AdminDashboard = () => {
       company.id === editingCompany.id ? editingCompany : company
     );
     setCompanies(updatedCompanies);
-    saveToLocalStorage(updatedCompanies, adminConfig);
+    saveToLocalStorage(updatedCompanies, adminConfig, adminUsers);
     setEditingCompany(null);
     toast({
       title: "Empresa actualizada",
@@ -143,7 +156,7 @@ const AdminDashboard = () => {
 
   const handleUpdateAdminConfig = (e) => {
     e.preventDefault();
-    saveToLocalStorage(companies, adminConfig);
+    saveToLocalStorage(companies, adminConfig, adminUsers);
     applyAdminColors(adminConfig);
     toast({
       title: "Configuración actualizada",
@@ -153,7 +166,14 @@ const AdminDashboard = () => {
 
   const handleAddAdminUser = (e) => {
     e.preventDefault();
-    if (!newAdminUser.username || !newAdminUser.password) return;
+    if (!newAdminUser.username || !newAdminUser.password) {
+      toast({
+        title: "Error",
+        description: "Debe completar usuario y contraseña",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const userExists = adminUsers.some(user => user.username === newAdminUser.username);
     if (userExists) {
@@ -177,6 +197,25 @@ const AdminDashboard = () => {
     toast({
       title: "Administrador agregado",
       description: "Nuevo usuario administrador creado exitosamente",
+    });
+  };
+
+  const handleDeleteAdminUser = (userId) => {
+    if (adminUsers.length <= 1) {
+      toast({
+        title: "Error",
+        description: "Debe mantener al menos un usuario administrador",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedUsers = adminUsers.filter(u => u.id !== userId);
+    setAdminUsers(updatedUsers);
+    saveToLocalStorage(companies, adminConfig, updatedUsers);
+    toast({ 
+      title: "Usuario eliminado", 
+      description: "Usuario administrador eliminado exitosamente" 
     });
   };
 
@@ -210,7 +249,7 @@ const AdminDashboard = () => {
         : company
     );
     setCompanies(updatedCompanies);
-    saveToLocalStorage(updatedCompanies, adminConfig);
+    saveToLocalStorage(updatedCompanies, adminConfig, adminUsers);
     toast({
       title: "Estado actualizado",
       description: "El estado de la empresa ha sido modificado",
@@ -224,7 +263,7 @@ const AdminDashboard = () => {
         : company
     );
     setCompanies(updatedCompanies);
-    saveToLocalStorage(updatedCompanies, adminConfig);
+    saveToLocalStorage(updatedCompanies, adminConfig, adminUsers);
     toast({
       title: "Carrito actualizado",
       description: "El estado del carrito ha sido modificado",
@@ -234,7 +273,7 @@ const AdminDashboard = () => {
   const handleDeleteCompany = (id) => {
     const updatedCompanies = companies.filter(company => company.id !== id);
     setCompanies(updatedCompanies);
-    saveToLocalStorage(updatedCompanies, adminConfig);
+    saveToLocalStorage(updatedCompanies, adminConfig, adminUsers);
     toast({
       title: "Empresa eliminada",
       description: "La empresa ha sido eliminada del sistema",
@@ -310,7 +349,7 @@ const AdminDashboard = () => {
 
           {/* Administrar usuario ADM */}
           <TabsContent value="admin-config">
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Usuarios Administradores</CardTitle>
@@ -324,16 +363,15 @@ const AdminDashboard = () => {
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {adminUsers.map((user) => (
                         <div key={user.id} className="flex justify-between items-center p-2 border rounded">
-                          <span className="font-medium">{user.username}</span>
+                          <div>
+                            <span className="font-medium">{user.username}</span>
+                            <span className="text-sm text-gray-500 ml-2">••••••••</span>
+                          </div>
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            onClick={() => {
-                              const updatedUsers = adminUsers.filter(u => u.id !== user.id);
-                              setAdminUsers(updatedUsers);
-                              saveToLocalStorage(companies, adminConfig, updatedUsers);
-                              toast({ title: "Usuario eliminado", description: "Usuario administrador eliminado" });
-                            }}
+                            onClick={() => handleDeleteAdminUser(user.id)}
+                            disabled={adminUsers.length <= 1}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -374,7 +412,7 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Configurar Panel - Moved logos and colors here */}
+          {/* Configurar Panel */}
           <TabsContent value="panel-config">
             <div className="grid lg:grid-cols-2 gap-6">
               <Card>
@@ -839,7 +877,7 @@ const AdminDashboard = () => {
                         <div className="flex space-x-2">
                           <Button size="sm">Probar Conexión Importar</Button>
                           <Button size="sm" variant="outline">Probar Conexión Exportar</Button>
-                          <Button size="sm" variant="outline" onClick={() => saveToLocalStorage(companies, adminConfig)}>
+                          <Button size="sm" variant="outline" onClick={() => saveToLocalStorage(companies, adminConfig, adminUsers)}>
                             Guardar Configuración
                           </Button>
                         </div>
