@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,10 @@ const AdminDashboard = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    applyAdminColors(adminConfig);
+  }, [adminConfig]);
+
   const loadData = () => {
     const savedCompanies = localStorage.getItem('companies');
     const savedAdminConfig = localStorage.getItem('adminConfig');
@@ -66,7 +71,6 @@ const AdminDashboard = () => {
     if (savedAdminConfig) {
       const config = JSON.parse(savedAdminConfig);
       setAdminConfig(config);
-      applyAdminColors(config);
       console.log('Loaded admin config in admin:', config);
     }
     if (savedAdminUsers) {
@@ -889,7 +893,6 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Informes */}
           <TabsContent value="reports">
             <div className="space-y-6">
               <Card>
